@@ -21,6 +21,7 @@ class LSTNet(object):
         self.output = args.output_fun
         self.lr = args.lr
         self.loss = args.loss
+        self.clip = args.clip
 
     def make_model(self, batch_size):
         
@@ -83,7 +84,8 @@ class LSTNet(object):
             res = Activation(self.output)(res)
 
         model = Model(inputs=x, outputs=res)
-        model.compile(optimizer=Adam(lr=self.lr), loss=self.loss)
+        #model.compile(optimizer=Adam(lr=self.lr), loss=self.loss)
+        model.compile(optimizer=Adam(lr=self.lr, clipnorm=self.clip), loss=self.loss)
         return model
 
 

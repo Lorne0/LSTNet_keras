@@ -15,10 +15,10 @@ def evaluate(y, yp, mx):
     # rrse
     rrse = np.sqrt(np.sum(np.square(y-yp)) / np.sum(np.square(np.mean(y)-y)))
     # corr
-    m, mp = np.mean(y, axis=0), np.mean(yp, axis=0)
-    corr = np.mean(np.sum((y-m)*(yp-mp), axis=0) / np.sqrt(np.sum(np.square(y-m), axis=0)*np.sum(np.square(yp-mp), axis=0)))
-    #m, mp, sig, sigp = y.mean(axis=0), yp.mean(axis=0), y.std(axis=0), yp.std(axis=0)
-    #corr = ((((y-m)*(yp-mp)).mean(axis=0) / (sig*sigp))[sig!=0]).mean()
+    #m, mp = np.mean(y, axis=0), np.mean(yp, axis=0)
+    #corr = np.mean(np.sum((y-m)*(yp-mp), axis=0) / np.sqrt(np.sum(np.square(y-m), axis=0)*np.sum(np.square(yp-mp), axis=0)))
+    m, mp, sig, sigp = y.mean(axis=0), yp.mean(axis=0), y.std(axis=0), yp.std(axis=0)
+    corr = ((((y-m)*(yp-mp)).mean(axis=0) / (sig*sigp))[sig!=0]).mean()
     #corr = ((((y-m)*(yp-mp)).mean(axis=0) / (sig*sigp))).mean()
     
     # rmse
@@ -40,17 +40,19 @@ def main(args):
     train_batch_num = int(l/args.batch_size)
     for e in range(1,1000+1):
         np.random.shuffle(order)
+        x, y = data.train[0][order].copy(), data.train[1][order].copy()
         for b in range(train_batch_num):
-            b_x = data.train[0][order][b*args.batch_size:(b+1)*args.batch_size]
-            b_y = data.train[1][order][b*args.batch_size:(b+1)*args.batch_size]
+            print("\r%d/%d" %(b+1,train_batch_num), end='')
+            b_x = x[b*args.batch_size:(b+1)*args.batch_size]
+            b_y = y[b*args.batch_size:(b+1)*args.batch_size]
             model.train_on_batch(b_x, b_y)
         y = model.predict(data.valid[0])
         rrse, corr, rmse = evaluate(data.valid[1], model.predict(data.valid[0]), data.col_max[0])
-        print("Valid | rrse: %.4f | corr: %.4f | rmse: %.4f" %(rrse, corr, rmse))
+        print("\n%d | Valid | rrse: %.4f | corr: %.4f | rmse: %.4f" %(e, rrse, corr, rmse))
         if e%5==0:
             rrse, corr, rmse = evaluate(data.test[1], model.predict(data.test[0]), data.col_max[0])
             print("\tTest | rrse: %.4f | corr: %.4f | rmse: %.4f" %(rrse, corr, rmse))
-            model.save(args.save)
+            #model.save(args.save)
             
 
 
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip', type=float, default=24)
     parser.add_argument('--CNN_kernel', type=int, default=6, help='the kernel size of the CNN layers')
     parser.add_argument('--highway_window', type=int, default=24, help='The window size of the highway component')
-    #parser.add_argument('--clip', type=float, default=10., help='gradient clipping')
+    parser.add_argument('--clip', type=float, default=10., help='gradient clipping')
     parser.add_argument('--epochs', type=int, default=100, help='upper epoch limit')
     parser.add_argument('--batch_size', type=int, default=128, metavar='N', help='batch size')
     parser.add_argument('--dropout', type=float, default=0.2, help='dropout applied to layers (0 = no dropout)')
