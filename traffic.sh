@@ -1,1 +1,1 @@
-time python main.py --data ./data/traffic.npz --hidSkip 10
+time python main.py --data ./data/traffic.npz --save ./model/traffic.pk --hidSkip 10

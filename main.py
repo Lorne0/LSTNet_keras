@@ -2,10 +2,13 @@ import argparse
 from utils import *
 from LSTNet import *
 import numpy as np
+from keras.models import model_from_yaml
+import pickle as pk
 import keras.backend as K
 import tensorflow as tf
 
-def get_session(gpu_fraction=0.4):
+# limit gpu memory
+def get_session(gpu_fraction=0.1):
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
     return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 K.set_session(get_session())
@@ -52,7 +55,24 @@ def main(args):
         if e%5==0:
             rrse, corr, rmse = evaluate(data.test[1], model.predict(data.test[0]), data.col_max[0])
             print("\tTest | rrse: %.4f | corr: %.4f | rmse: %.4f" %(rrse, corr, rmse))
-            #model.save(args.save)
+            #can't use model.save(args.save) due to JSON Serializable error
+            
+            yaml = model.to_yaml()
+            W = model.get_weights()
+            with open(args.save, "wb") as fw:
+                pk.dump(yaml, fw, protocol=pk.HIGHEST_PROTOCOL)
+                pk.dump(W, fw, protocol=pk.HIGHEST_PROTOCOL)
+
+            '''
+            # Test loaded model
+            with open(args.save, "rb") as fp:
+                new_yaml = pk.load(fp)
+                new_W = pk.load(fp)
+            new_model = model_from_yaml(new_yaml)
+            new_model.set_weights(new_W)
+            rrse, corr, rmse = evaluate(data.test[1], new_model.predict(data.test[0]), data.col_max[0])
+            print("\tLoaded Test | rrse: %.4f | corr: %.4f | rmse: %.4f" %(rrse, corr, rmse))
+            '''
             
 
 
