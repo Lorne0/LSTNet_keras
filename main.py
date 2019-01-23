@@ -52,10 +52,9 @@ def main(args, exp):
     data = Data(args)
     print_shape(data)
     if args.multi==1:
-        M = LSTNet_multi_inputs(args, data.m)
+        model = LSTNet_multi_inputs(args, data.m).make_model()
     else:
-        M = LSTNet(args, data.m)
-    model = M.make_model(args.batch_size)
+        model = LSTNet(args, data.m).make_model()
 
     ### Train ###
     test_result = [1e6, -1e6]

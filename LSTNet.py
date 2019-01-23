@@ -24,7 +24,7 @@ class LSTNet(object):
         self.loss = args.loss
         self.clip = args.clip
 
-    def make_model(self, batch_size):
+    def make_model(self):
         
         x = Input(shape=(self.P, self.m))
 
@@ -88,7 +88,7 @@ class LSTNet_multi_inputs(object):
         self.loss = args.loss
         self.clip = args.clip
 
-    def make_model(self, batch_size):
+    def make_model(self):
         
         # Input1: short-term time series
         input1 = Input(shape=(self.P, self.m))
