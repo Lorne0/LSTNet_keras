@@ -49,7 +49,7 @@ def main(args, exp):
     flog.write(now+"\n")
     flog.flush()
 
-    data = Data(args.data, horizon=args.horizon, window=args.window, \
+    data = Data(args.data, horizon=args.horizon, window=args.window, normalize=args.normalize, \
                 skip=args.skip, pt=args.ps, Ck=args.CNN_kernel, multi=args.multi)
     print_shape(data)
     if args.multi=='multi':
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('--optim', type=str, default='adam')
     parser.add_argument('--lr', type=float, default=0.0005)
     parser.add_argument('--loss', type=str, default='mae')
-    #parser.add_argument('--normalize', type=int, default=2)
+    parser.add_argument('--normalize', type=int, default=2)
     parser.add_argument('--output_fun', type=str, default='sigmoid')
     parser.add_argument('--exps', type=int, default=1, help='number of experiments')
     parser.add_argument('--patience', type=int, default=10, help='patience of early stopping')

@@ -9,13 +9,19 @@ def raw_to_npz(fn):
     np.savez_compressed('./data/'+fn, a=A)
 
 class Data(object):
-    def __init__(self, fn, tn=0.6, vd=0.2, horizon=3, window=12, skip=24, pt=3, Ck=6, multi=False):
+    def __init__(self, fn, tn=0.6, vd=0.2, horizon=3, window=12, skip=24, pt=3, Ck=6, multi=False, normalize=2):
         self.h, self.w, self.skip, self.pt, self.Ck = horizon, window, skip, pt, Ck
         self.raw = np.load(fn)['a']
         self.n, self.m = self.raw.shape
-        self.col_max = np.max(self.raw, axis=0)+1
-        self.raw /= self.col_max
         self.tn, self.vd = tn, vd
+
+        if normalize==1:
+            self.mx = np.max(np.abs(self.raw))
+            self.raw /= self.mx
+        elif normalize==2:
+            self.col_max = np.max(np.abs(self.raw), axis=0)+1
+            self.raw /= self.col_max
+
         if multi:
             self._split(self._slice_multi())
         else:

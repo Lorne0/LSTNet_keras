@@ -1,12 +1,21 @@
 ## Keras version of LSTNet
 
+### Environment
+* python 3.6.0
+* tensorflow 1.12.0
+* Keras 2.2.0
 
-#### Experiment Result
+### Usage
+```
+unzip data.zip
+mkdir save/ logs/
+./er.sh
+```
 
-| rrse/corr | solar         | traffic       | ele           | er            |
-|-----------|---------------|---------------|---------------|---------------|
-| paper     | 0.1843/0.9843 | 0.4777/0.8721 | 0.0864/0.9283 | 0.0226/0.9735 |
-| keras     | 0.2196/0.9763 | 0.4924/0.8679 | 0.0975/0.9271 | 0.0319/0.9433 |
+### Multi-input
+The original version is a little redundant since it should put the huge tensor into the model as the input.
+However, if the time interval is small, like 5 or 10 mins, the input may be too huge for memory and lacking of efficiency during training.
+Therefore, I wrote a version called **LSTNet_multi_inputs** which deconstructs the input as (1) short-term time series, like (t-3, t-2, t-1, t) and (2) long-term skip time series, like (t-2xskip, t-skip, t)
+The result is as good as the original one, but much faster.
 
-The performance of keras version is a little bad due to lack of tuning parameters
 
