@@ -95,9 +95,9 @@ class LSTNet_multi_inputs(object):
         # CNN
         conv1 = Conv1D(self.hidC, self.Ck, strides=1, activation='relu') # for input1
         # It's a probelm that I can't find any way to use the same Conv1D layer to train the two inputs, 
-        # since input2's strides shoude be Ck, not 1 as input1
+        # since input2's strides should be Ck, not 1 as input1
         conv2 = Conv1D(self.hidC, self.Ck, strides=self.Ck, activation='relu') # for input2
-        conv2.set_weights(conv1.get_weights()) # in original version, they use same weights
+        conv2.set_weights(conv1.get_weights()) # at least use same weight
 
         c1 = conv1(input1)
         c1 = Dropout(self.dropout)(c1)
