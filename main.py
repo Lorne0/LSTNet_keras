@@ -49,10 +49,9 @@ def main(args, exp):
     flog.write(now+"\n")
     flog.flush()
 
-    data = Data(args.data, horizon=args.horizon, window=args.window, normalize=args.normalize, \
-                skip=args.skip, pt=args.ps, Ck=args.CNN_kernel, multi=args.multi)
+    data = Data(args)
     print_shape(data)
-    if args.multi=='multi':
+    if args.multi==1:
         M = LSTNet_multi_inputs(args, data.m)
     else:
         M = LSTNet(args, data.m)
@@ -69,19 +68,19 @@ def main(args, exp):
     for e in range(1,args.epochs+1):
         tt = time.time()
         np.random.shuffle(order)
-        if args.multi=='multi':
+        if args.multi:
             x1, x2, y = data.train[0][order].copy(), data.train[1][order].copy(), data.train[2][order].copy()
         else:
             x, y = data.train[0][order].copy(), data.train[1][order].copy()
         for b in range(train_batch_num):
             print("\r%d/%d" %(b+1,train_batch_num), end='')
-            if args.multi=='multi':
+            if args.multi:
                 b_x1, b_x2, b_y = x1[b*bs:(b+1)*bs], x2[b*bs:(b+1)*bs], y[b*bs:(b+1)*bs]
                 model.train_on_batch([b_x1, b_x2], b_y)
             else:
                 b_x, b_y = x[b*bs:(b+1)*bs], y[b*bs:(b+1)*bs]
                 model.train_on_batch(b_x, b_y)
-        rrse, corr = evaluate(data.valid[-1], model.predict(data.valid[:-1]))
+        rrse, corr = evaluate(data.valid[-1], model.predict(data.valid[:-1], batch_size=bs))
         et = time.time()-tt
         print("\r%d | Valid | rrse: %.4f | corr: %.4f | time: %.2fs" %(e, rrse, corr, et))
 
@@ -89,7 +88,7 @@ def main(args, exp):
             best_valid = [rrse, corr]
             pat = 0
             # test
-            rrse, corr = evaluate(data.test[-1], model.predict(data.test[:-1]))
+            rrse, corr = evaluate(data.test[-1], model.predict(data.test[:-1], batch_size=bs))
             s = "{} | Test | rrse: {:.4f} | corr: {:.4f} | approx epoch time: {:.2f}s".format(e, rrse, corr, et)
             print("\t"+s)
             flog.write(s+"\n")
@@ -141,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', type=float, default=0.2, help='dropout applied to layers (0 = no dropout)')
     parser.add_argument('--seed', type=int, default=54321, help='random seed')
     #parser.add_argument('--gpu', type=int, default=None)
-    parser.add_argument('--multi', type=str, default='normal', help='normal or multi, original or multi-input LSTNet')
+    parser.add_argument('--multi', type=int, default=0, help='original(0) or multi-input(1) LSTNet')
     parser.add_argument('--log_interval', type=int, default=2000, metavar='N', help='report interval')
     parser.add_argument('--save', type=str,  default='save/model.pt', help='path to save the final model')
     parser.add_argument('--log', type=str,  default='logs/model.pt', help='path to save the testing logs')

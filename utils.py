@@ -9,20 +9,20 @@ def raw_to_npz(fn):
     np.savez_compressed('./data/'+fn, a=A)
 
 class Data(object):
-    def __init__(self, fn, tn=0.6, vd=0.2, horizon=3, window=12, skip=24, pt=3, Ck=6, multi=False, normalize=2):
-        self.h, self.w, self.skip, self.pt, self.Ck = horizon, window, skip, pt, Ck
-        self.raw = np.load(fn)['a']
+    def __init__(self, args, tn=0.6, vd=0.2):
+        self.h, self.w, self.skip, self.ps, self.Ck = args.horizon, args.window, args.skip, args.ps, args.CNN_kernel
+        self.raw = np.load(args.data)['a']
         self.n, self.m = self.raw.shape
         self.tn, self.vd = tn, vd
 
-        if normalize==1:
+        if args.normalize==1:
             self.mx = np.max(np.abs(self.raw))
             self.raw /= self.mx
-        elif normalize==2:
+        elif args.normalize==2:
             self.col_max = np.max(np.abs(self.raw), axis=0)+1
             self.raw /= self.col_max
 
-        if multi:
+        if args.multi:
             self._split(self._slice_multi())
         else:
             self._split(self._slice())
@@ -38,15 +38,15 @@ class Data(object):
         return X, Y
 
     def _slice_multi(self):
-        s = self.pt*self.skip+self.Ck-1 + self.h-1
+        s = self.ps*self.skip+self.Ck-1 + self.h-1
         X1 = np.zeros((self.n-s, self.w, self.m))
-        X2 = np.zeros((self.n-s, self.pt*self.Ck, self.m))
+        X2 = np.zeros((self.n-s, self.ps*self.Ck, self.m))
         Y  = np.zeros((self.n-s, self.m))
         for i in range(s, self.n):
             t = i-self.h+1
             X1[i-s] = self.raw[t-self.w:t].copy()
             idx = []
-            for k in range(self.pt):
+            for k in range(self.ps):
                 idx = list(range(t-self.Ck-k*self.skip, t-k*self.skip)) + idx
             idx = np.array(idx, dtype=int)
             X2[i-s] = self.raw[idx].copy()
